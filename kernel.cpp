@@ -1,5 +1,6 @@
 #include "types.h"
 #include "gdt.h"
+#include "interrupts.h"
 
 void printf(char* str)
 {
@@ -45,15 +46,20 @@ extern "C" constructor end_ctors;
 extern "C" void callConstructors()
 {
     for (constructor* i = &start_ctors; i != &end_ctors; i++)
-    (*i)();
+    {
+        (*i)();
+    }
 }
 
-extern "C" void kernelMain(void* multiboot_structure, uint32_t /* magicNumber */)
+extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
     printf("Hello World!  Added GDT Basic Functionality\n");
     printf("Hello World!  Added GDT Basic Functionality");
 
     GlobalDescriptorTable gdt;
+    InterruptManager interrupts(&gdt);
+
+    interrupts.Activate();
 
     while(1);
 }

@@ -1,11 +1,11 @@
-GPPPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
+GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
 ASPARAMS = --32
 LDPARAMS = -melf_i386
 
-objects = loader.o gdt.o port.o kernel.o
+objects = loader.o gdt.o port.o interruptstubs.o interrupts.o kernel.o
 
 %.o: %.cpp
-	g++ $(GPPPARAMS) -o $@ -c $<
+	gcc $(GCCPARAMS) -o $@ -c $<
 
 %.o: %.s
 	as $(ASPARAMS) -o $@ $<
@@ -32,8 +32,8 @@ mykernel.iso: mykernel.bin
 	rm -rf iso
 
 run: mykernel.iso
-	(killall virtualboxvm && sleep 1) || true
-	virtualboxvm --startvm "My Operating System" &
+	(killall VirtualBoxVM && sleep 1) || true
+	VBoxManage startvm MyOS &
 
 .PHONY: clean
 clean:
