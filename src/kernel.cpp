@@ -5,6 +5,7 @@
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
 #include <hardwarecommunication/pci.h>
+#include <drivers/vga.h>
 
 using namespace myos::common;
 using namespace myos::drivers;
@@ -135,6 +136,14 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     printf("Initializing Hardware, Stage 3\n");
     interrupts.Activate();
+
+    VideoGraphicsArray vga;
+
+    vga.SetMode(320, 200, 8);
+
+    for (int y = 0; y < 200; y++)
+        for (int x = 0; x < 320; x++)
+            vga.PutPixel(x, y, 0x00, 0x00, 0xA8);
 
     while(1);
 }
