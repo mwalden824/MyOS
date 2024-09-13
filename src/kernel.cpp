@@ -9,6 +9,7 @@
 #include <gui/desktop.h>
 #include <gui/widget.h>
 #include <gui/window.h>
+#include <multitasking.h>
 
 // #define GRAPHICS_MODE
 
@@ -105,6 +106,18 @@ class MouseToConsole : public MouseEventHandler
         }
 };
 
+void taskA()
+{
+    while(true)
+        printf("A");
+}
+
+void taskB()
+{
+    while(true)
+        printf("B");
+}
+
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -121,7 +134,14 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     printf("Hello World!\n");
 
     GlobalDescriptorTable gdt;
-    InterruptManager interrupts(&gdt);
+
+    TaskManager taskManager;
+    Task task1(&gdt, taskA);
+    Task task2(&gdt, taskB);
+    taskManager.AddTask(&task1);
+    taskManager.AddTask(&task1);
+
+    InterruptManager interrupts(0x20, &gdt, &taskManager);
 
     printf("Initializing Hardware, Stage 1\n");
 
@@ -159,26 +179,23 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     printf("Initializing Hardware, Stage 3\n");
 
-    vga.SetMode(320, 200, 8);
-
     #ifdef GRAPHICS_MODE
+        vga.SetMode(320, 200, 8);
         Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
         desktop.AddChild(&win1);
         Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
         desktop.AddChild(&win2);
     #else
-        vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
+        // vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
     #endif
 
     interrupts.Activate();
 
-    #ifdef GRAPHICS_MODE
-        while(1)
-        {
+    while(1)
+    {
+        #ifdef GRAPHICS_MODE
             desktop.Draw(&vga);
-        }
-    #else
-        while(1);
-    #endif
+        #endif
+    }
 
 }

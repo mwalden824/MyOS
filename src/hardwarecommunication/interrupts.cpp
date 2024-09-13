@@ -1,5 +1,6 @@
 #include <hardwarecommunication/interrupts.h>
 
+using namespace myos;
 using namespace myos::common;
 using namespace myos::hardwarecommunication;
 
@@ -44,13 +45,15 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
+InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescriptorTable* gdt, TaskManager* taskManager)
 : picMasterCommand(0x20),
 picMasterData(0x21),
 picSlaveCommand(0xA0),
 picSlaveData(0xA1)
 {
-    uint16_t CodeSegment = gdt->CodeSegmentSelector();
+    this->taskManager = taskManager;
+    this->hardwareInterruptOffset = hardwareInterruptOffset;
+    uint32_t CodeSegment = gdt->CodeSegmentSelector();
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
 
     // Initialize every entry in the IDT to the IgnoreInterruptRequest handler so no entries are blank which would cause a fault
@@ -123,6 +126,7 @@ picSlaveData(0xA1)
 
 InterruptManager::~InterruptManager()
 {
+    Deactivate();
 }
 
 void InterruptManager::Activate()
@@ -161,10 +165,15 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptnumber, uint32_t e
     {
         esp = handlers[interruptnumber]->HandleInterrupt(esp);
     }
-    else if (interruptnumber != 0x20)
+    // else if (interruptnumber != 0x20)
+    // {
+    //     printf("UNHANDLED INTERRUPT 0x");
+    //     printfHex(interruptnumber);
+    // }
+
+    if (interruptnumber == 0x20)
     {
-        printf("UNHANDLED INTERRUPT 0x");
-        printfHex(interruptnumber);
+        esp = (uint32_t)taskManager->Scheduler((CPUState*)esp);
     }
 
     if (0x20 <= interruptnumber && interruptnumber < 0x30)
