@@ -125,7 +125,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     printf("Initializing Hardware, Stage 1\n");
 
-    Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+    #ifdef GRAPHICS_MODE
+        Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+    #endif
 
     DriverManager drvManager;
 
