@@ -62,11 +62,11 @@ HandleInterruptRequest 0x80
 
 int_bottom:
     # Save registers
-    ; pusha
-    ; pushl %ds
-    ; pushl %es
-    ; pushl %fs
-    ; pushl %gs
+    # pusha
+    # pushl %ds
+    # pushl %es
+    # pushl %fs
+    # pushl %gs
 
     pushl %ebp
     pushl %edi
@@ -82,7 +82,7 @@ int_bottom:
     push (interruptnumber)
     call _ZN4myos21hardwarecommunication16InterruptManager15handleInterruptEhj
     # addl $5, %esp
-    movl %eax, %esp # switch the stack
+    mov %eax, %esp # switch the stack
 
     # restore registers
     popl %eax
@@ -94,11 +94,11 @@ int_bottom:
     popl %edi
     popl %ebp
 
-    ; popl %gs
-    ; popl %fs
-    ; popl %es
-    ; popl %ds
-    ; popa
+    # popl %gs
+    # popl %fs
+    # popl %es
+    # popl %ds
+    # popa
 
     add $4, %esp
 
