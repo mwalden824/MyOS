@@ -6,11 +6,17 @@
 #include <drivers/mouse.h>
 #include <hardwarecommunication/pci.h>
 #include <drivers/vga.h>
+#include <gui/desktop.h>
+#include <gui/widget.h>
+#include <gui/window.h>
+
+// #define GRAPHICS_MODE
 
 using namespace myos::common;
 using namespace myos::drivers;
 using namespace myos::hardwarecommunication;
 using namespace myos;
+using namespace myos::gui;
 
 void printf(char* str)
 {
@@ -113,37 +119,64 @@ extern "C" void callConstructors()
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
     printf("Hello World!\n");
-    printf("Initializing Hardware, Stage 1\n");
 
     GlobalDescriptorTable gdt;
     InterruptManager interrupts(&gdt);
 
+    printf("Initializing Hardware, Stage 1\n");
+
+    Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+
     DriverManager drvManager;
 
-    PrintfKeyboardEventHandler kbhandler;
-    KeyboardDriver keyboard(&interrupts, &kbhandler);
+    #ifdef GRAPHICS_MODE
+        KeyboardDriver keyboard(&interrupts, &desktop);
+    #else
+        PrintfKeyboardEventHandler kbhandler;
+        KeyboardDriver keyboard(&interrupts, &kbhandler);
+    #endif
+
     drvManager.AddDriver(&keyboard);
 
-    MouseToConsole mousehandler;
-    MouseDriver mouse(&interrupts, &mousehandler);
+    #ifdef GRAPHICS_MODE
+        MouseDriver mouse(&interrupts, &desktop);
+    #else
+        MouseToConsole mousehandler;
+        MouseDriver mouse(&interrupts, &mousehandler);
+    #endif
+
     drvManager.AddDriver(&mouse);
 
     PeripheralComponentInterconnectController pciController;
     pciController.SelectDrivers(&drvManager, &interrupts);
 
+    VideoGraphicsArray vga;
+
     printf("Initializing Hardware, Stage 2\n");
     drvManager.ActivateAll();
 
     printf("Initializing Hardware, Stage 3\n");
-    interrupts.Activate();
-
-    VideoGraphicsArray vga;
 
     vga.SetMode(320, 200, 8);
 
-    for (int y = 0; y < 200; y++)
-        for (int x = 0; x < 320; x++)
-            vga.PutPixel(x, y, 0x00, 0x00, 0xA8);
+    #ifdef GRAPHICS_MODE
+        Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
+        desktop.AddChild(&win1);
+        Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
+        desktop.AddChild(&win2);
+    #else
+        vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
+    #endif
 
-    while(1);
+    interrupts.Activate();
+
+    #ifdef GRAPHICS_MODE
+        while(1)
+        {
+            desktop.Draw(&vga);
+        }
+    #else
+        while(1);
+    #endif
+
 }

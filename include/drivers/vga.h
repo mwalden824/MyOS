@@ -36,8 +36,10 @@ namespace myos
                 virtual bool SupportsMode(myos::common::uint32_t width, myos::common::uint32_t height, myos::common::uint32_t depth);
                 virtual bool SetMode(myos::common::uint32_t width, myos::common::uint32_t height, myos::common::uint32_t depth);
 
-                virtual void PutPixel(myos::common::uint32_t x, myos::common::uint32_t y, myos::common::uint8_t colorIndex);
-                virtual void PutPixel(myos::common::uint32_t x, myos::common::uint32_t y, myos::common::uint8_t red, myos::common::uint8_t green, myos::common::uint8_t blue);
+                virtual void PutPixel(myos::common::int32_t x, myos::common::int32_t y, myos::common::uint8_t colorIndex);
+                virtual void PutPixel(myos::common::int32_t x, myos::common::int32_t y, myos::common::uint8_t red, myos::common::uint8_t green, myos::common::uint8_t blue);
+
+                virtual void FillRectangle(myos::common::uint32_t x, myos::common::uint32_t y, myos::common::uint32_t w, myos::common::uint32_t h, myos::common::uint8_t red, myos::common::uint8_t green, myos::common::uint8_t blue);
         };
     }
 }

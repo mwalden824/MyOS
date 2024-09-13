@@ -120,18 +120,32 @@ bool VideoGraphicsArray::SetMode(uint32_t width, uint32_t height, uint32_t depth
 
 uint8_t VideoGraphicsArray::GetColorIndex(uint8_t red, uint8_t green, uint8_t blue)
 {
-    if (red == 0x00 && green == 0x00 && blue == 0xA8)
-        return 0x01;
+    if (red == 0x00 && green == 0x00 && blue == 0x00) return 0x00;  // Black
+    if (red == 0x00 && green == 0x00 && blue == 0xA8) return 0x01;  // Blue
+    if (red == 0x00 && green == 0xA8 && blue == 0x00) return 0x02;  // Green
+    if (red == 0xA8 && green == 0x00 && blue == 0x00) return 0x04;  // Red
+    if (red == 0xFF && green == 0xFF && blue == 0xFF) return 0x3F;  // White
+
+    return 0;
 }
 
-void VideoGraphicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex)
+void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex)
 {
-    uint8_t* pixelAddress = GetFrameBufferSegment() + 320 * y + x;
+    if (x < 0 || x >= 320 || y < 0 || y >= 200)
+        return;
+
+    int8_t* pixelAddress = (int8_t*)GetFrameBufferSegment() + 320 * y + x;
     *pixelAddress = colorIndex;
 }
 
-void VideoGraphicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t red, uint8_t green, uint8_t blue)
+void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t red, uint8_t green, uint8_t blue)
 {
     PutPixel(x, y, GetColorIndex(red, green, blue));
 }
 
+void VideoGraphicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t red, uint8_t green, uint8_t blue)
+{
+    for (int iy = y; iy < y+h; iy++)
+        for (int ix = x; ix < x+w; ix++)
+            PutPixel(ix, iy, red, green, blue);
+}
