@@ -12,6 +12,8 @@
 #include <gui/window.h>
 #include <multitasking.h>
 
+#include <drivers/amd_am79c973.h>
+
 // #define GRAPHICS_MODE
 
 using namespace myos::common;
@@ -191,7 +193,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     PeripheralComponentInterconnectController pciController;
     pciController.SelectDrivers(&drvManager, &interrupts);
 
-    VideoGraphicsArray vga;
+    #ifdef GRAPHICS_MODE
+        VideoGraphicsArray vga;
+    #endif
 
     printf("Initializing Hardware, Stage 2\n");
     drvManager.ActivateAll();

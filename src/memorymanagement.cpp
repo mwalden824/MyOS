@@ -34,7 +34,7 @@ void* MemoryManager::malloc(size_t size)
 {
     MemoryChunk *result = 0;
 
-    for (MemoryChunk* chunk = first; chunk != 0 && result == 0; chunk->next)
+    for (MemoryChunk* chunk = first; chunk != 0 && result == 0; chunk = chunk->next)
         if (chunk->size > size && !chunk->allocated)
             result = chunk;
 

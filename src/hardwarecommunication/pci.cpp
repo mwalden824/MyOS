@@ -137,7 +137,7 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
                 break;
         }
 
-        result.prefetchable = ((barValue >> 3) & 0x01) == 0x01;
+        // result.prefetchable = ((barValue >> 3) & 0x01) == 0x01;
     }
     else
     {
@@ -162,6 +162,8 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
                     driver = (amd_am79c973*)MemoryManager::activeMemoryManager->malloc(sizeof(amd_am79c973));
                     if (driver != 0)
                         new (driver) amd_am79c973(&dev, interruptManager);
+                    else
+                        printf("instantiation failed");
                     return driver;                    
                     break;
             }
