@@ -212,6 +212,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
         // vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
     #endif
 
+    amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+    eth0->Send((uint8_t*)"Hello Network", 13);
+
     interrupts.Activate();
 
     while(1)
