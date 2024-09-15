@@ -26,7 +26,6 @@ namespace myos
 
             void* malloc(myos::common::size_t size);
             void free(void* ptr);
-
     };
 }
 

@@ -7,6 +7,7 @@
 #include <hardwarecommunication/interrupts.h>
 
 #include <memorymanagement.h>
+// #include <drivers/amd_am79c973.h>
 
 namespace myos
 {
