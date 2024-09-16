@@ -223,14 +223,10 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     ata0s.Identify();
 
     char* atabuffer = "BLAH BLAH BLAH";
-    // ata0s.Flush();
     ata0s.Write28(0, (uint8_t*)atabuffer, 14);
     ata0s.Flush();
-    // printf("\n");
 
     ata0s.Read28(0, 14);
-    // ata0s.Flush();
-    // printf("\n");
 
     // interrupt 15
     AdvancedTechnologyAttachment ata1m(0x170, true);
