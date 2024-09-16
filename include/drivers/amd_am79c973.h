@@ -11,6 +11,20 @@ namespace myos
 {
     namespace drivers
     {
+        class amd_am79c973;
+
+        class RawDataHandler 
+        {
+            protected:
+                amd_am79c973* backend;
+            public:
+                RawDataHandler(amd_am79c973* backend);
+                ~RawDataHandler();
+
+                virtual bool OnRawDataReceived(myos::common::uint8_t* buffer, myos::common::uint32_t size);
+                virtual void Send(myos::common::uint8_t* buffer, myos::common::uint32_t size);
+        };
+
         class amd_am79c973 : public Driver, public myos::hardwarecommunication::InterruptHandler
         {
             struct InitializationBlock
@@ -55,6 +69,8 @@ namespace myos
             myos::common::uint8_t recvBuffers[2*1024+15][8];
             myos::common::uint8_t currentRecvBuffer;
 
+            RawDataHandler* handler;
+
             public:
                 amd_am79c973(myos::hardwarecommunication::PeripheralComponentInterconnectDescriptor *dev, myos::hardwarecommunication::InterruptManager* interruptManager);
                 ~amd_am79c973();
@@ -65,6 +81,9 @@ namespace myos
 
                 void Send(myos::common::uint8_t* buffer, int size);
                 void Receive();
+
+                void SetHandler(RawDataHandler* handler);
+                myos::common::uint64_t GetMACAddress();
         };
     }
 }
