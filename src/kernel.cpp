@@ -2,6 +2,7 @@
 #include <gdt.h>
 #include <memorymanagement.h>
 #include <hardwarecommunication/interrupts.h>
+#include <syscalls.h>
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
@@ -110,16 +111,21 @@ class MouseToConsole : public MouseEventHandler
         }
 };
 
+void sysprintf(char* str)
+{
+    asm("int $0x80" : : "a" (4), "b" (str));
+}
+
 void taskA()
 {
     while(true)
-        printf("A");
+        sysprintf("A");
 }
 
 void taskB()
 {
     while(true)
-        printf("B");
+        sysprintf("B");
 }
 
 typedef void (*constructor)();
@@ -158,12 +164,13 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     printf("\n");
 
     TaskManager taskManager;
-    // Task task1(&gdt, taskA);
-    // Task task2(&gdt, taskB);
-    // taskManager.AddTask(&task1);
-    // taskManager.AddTask(&task2);
+    Task task1(&gdt, taskA);
+    Task task2(&gdt, taskB);
+    taskManager.AddTask(&task1);
+    taskManager.AddTask(&task2);
 
     InterruptManager interrupts(0x20, &gdt, &taskManager);
+    SyscallHandler syscalls(0x80, &interrupts);
 
     printf("Initializing Hardware, Stage 1\n");
 
@@ -213,24 +220,24 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
         // vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
     #endif
 
-    // interrupt 14
-    AdvancedTechnologyAttachment ata0m(0x1F0, true);
-    printf("\nATA Primary Master: ");
-    ata0m.Identify();
+    // // interrupt 14
+    // AdvancedTechnologyAttachment ata0m(0x1F0, true);
+    // printf("\nATA Primary Master: ");
+    // ata0m.Identify();
 
-    AdvancedTechnologyAttachment ata0s(0x1F0, false);
-    printf("\nATA Primary Slave: ");
-    ata0s.Identify();
+    // AdvancedTechnologyAttachment ata0s(0x1F0, false);
+    // printf("\nATA Primary Slave: ");
+    // ata0s.Identify();
 
-    char* atabuffer = "BLAH BLAH BLAH";
-    ata0s.Write28(0, (uint8_t*)atabuffer, 14);
-    ata0s.Flush();
+    // char* atabuffer = "BLAH BLAH BLAH";
+    // ata0s.Write28(0, (uint8_t*)atabuffer, 14);
+    // ata0s.Flush();
 
-    ata0s.Read28(0, 14);
+    // ata0s.Read28(0, 14);
 
-    // interrupt 15
-    AdvancedTechnologyAttachment ata1m(0x170, true);
-    AdvancedTechnologyAttachment ata1s(0x170, false);
+    // // interrupt 15
+    // AdvancedTechnologyAttachment ata1m(0x170, true);
+    // AdvancedTechnologyAttachment ata1s(0x170, false);
 
     // third: 0x1E8
     // fourth: 0x168
