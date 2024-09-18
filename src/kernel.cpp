@@ -17,6 +17,7 @@
 #include <drivers/amd_am79c973.h>
 #include <net/etherframe.h>
 #include <net/arp.h>
+#include <net/ipv4.h>
 
 // #define GRAPHICS_MODE
 
@@ -247,8 +248,12 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
     uint32_t ip_be = ((uint32_t)ip4 << 24) | ((uint32_t)ip3 << 16) | ((uint32_t)ip2 << 8) | ((uint32_t)ip1);
+
     uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
     uint32_t gip_be = ((uint32_t)gip4 << 24) | ((uint32_t)gip3 << 16) | ((uint32_t)gip2 << 8) | ((uint32_t)gip1);
+
+    uint8_t subnetMask_1 = 255, subnetMask_2 = 255, subnetMask_3 = 255, subnetMask_4 = 0;
+    uint32_t subnetMask__be = ((uint32_t)subnetMask_4 << 24) | ((uint32_t)subnetMask_3 << 16) | ((uint32_t)subnetMask_2 << 8) | ((uint32_t)subnetMask_1);
 
     amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
 
@@ -258,6 +263,8 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     AddressResolutionProtocol arp(&etherframe);
 
+    InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
+
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
 
@@ -265,7 +272,8 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     printf("\n\n\n\n\n\n\n\n");
     // arp.Resolve(gip_be);
-    arp.BroadcastMACAddress(gip_be);
+    // arp.BroadcastMACAddress(gip_be);
+    ipv4.Send(gip_be, 0x0008, (uint8_t*)"foobar", 6);
 
     while(1)
     {
