@@ -16,12 +16,12 @@ RawDataHandler::~RawDataHandler()
     backend->SetHandler(0);
 }
 
-bool RawDataHandler::OnRawDataReceived(myos::common::uint8_t* buffer, myos::common::uint32_t size)
+bool RawDataHandler::OnRawDataReceived(uint8_t* buffer, uint32_t size)
 {
     return false;
 }
 
-void RawDataHandler::Send(myos::common::uint8_t* buffer, myos::common::uint32_t size)
+void RawDataHandler::Send(uint8_t* buffer, uint32_t size)
 {
     backend->Send(buffer, size);
 }
@@ -82,7 +82,7 @@ busControlRegisterDataPort(dev->portBase + 0x16)
         sendBufferDescr[i].flags2 = 0;
         sendBufferDescr[i].avail = 0;
 
-        recvBufferDescr[i].address = (((uint32_t)&recvBufferDescr[i]) + 15 ) & ~(uint32_t)0xF;
+        recvBufferDescr[i].address = (((uint32_t)&recvBuffers[i]) + 15 ) & ~(uint32_t)0xF;
         recvBufferDescr[i].flags = 0xF7FF | 0x80000000;
         recvBufferDescr[i].flags2 = 0;
         recvBufferDescr[i].avail = 0;
@@ -133,7 +133,7 @@ uint32_t amd_am79c973::HandleInterrupt(uint32_t esp)
     if ((temp & 0x2000) == 0x2000) printf("AMD am79c973 COLLISION ERROR \n");
     if ((temp & 0x1000) == 0x1000) printf("AMD am79c973 MISSED FRAME \n");
     if ((temp & 0x0800) == 0x0800) printf("AMD am79c973 MEMORY ERROR \n");
-    if ((temp & 0x0400) == 0x0400) printf("AMD am79c973 DATA RECIEVED \n");
+    if ((temp & 0x0400) == 0x0400) Receive();
     if ((temp & 0x0200) == 0x0200) printf("AMD am79c973 DATA SENT \n");
 
     // ACK
@@ -159,6 +159,13 @@ void amd_am79c973::Send(uint8_t* buffer, int size)
         *dst = *src;
     }
 
+    printf("Sending: ");
+    for (int i = 0; i < size; i++)
+    {
+        printfHex(buffer[i]);
+        printf(" ");
+    }
+
     sendBufferDescr[sendDescriptor].avail = 0;
     sendBufferDescr[sendDescriptor].flags2 = 0;
     sendBufferDescr[sendDescriptor].flags = 0x8300F000 | ((uint16_t)((-size) & 0xFFF));
@@ -174,7 +181,7 @@ void amd_am79c973::Receive()
     for (; (recvBufferDescr[currentRecvBuffer].flags & 0x80000000) == 0; currentRecvBuffer = (currentRecvBuffer + 1) % 8)
     {
         if (!(recvBufferDescr[currentRecvBuffer].flags & 0x40000000)
-          && ((recvBufferDescr[currentRecvBuffer].flags & 0x30000000) == 0x30000000)
+          && ((recvBufferDescr[currentRecvBuffer].flags & 0x03000000) == 0x03000000)
         )
         {
             uint32_t size = recvBufferDescr[currentRecvBuffer].flags & 0xFFF;
@@ -183,6 +190,14 @@ void amd_am79c973::Receive()
 
             uint8_t* buffer = (uint8_t*)(recvBufferDescr[currentRecvBuffer].address);
 
+
+            for(int i = 0; i < (size>64?64:size); i++)
+            {
+                printfHex(buffer[i]);
+                printf(" ");
+            }
+
+
             if (handler != 0)
             {
                 if (handler->OnRawDataReceived(buffer, size))
@@ -190,12 +205,6 @@ void amd_am79c973::Receive()
                     Send(buffer, size);
                 }
             }
-
-            // for (int i = 0; i < size; i++)
-            // {
-            //     printfHex(buffer[i]);
-            //     printf(" ");
-            // }
         }
 
         recvBufferDescr[currentRecvBuffer].flags2 = 0;
@@ -211,4 +220,15 @@ void amd_am79c973::SetHandler(RawDataHandler* handler)
 uint64_t amd_am79c973::GetMACAddress()
 {
     return initBlock.physicalAddress;
+}
+
+
+void amd_am79c973::SetIPAddress(uint32_t ip)
+{
+    initBlock.logicalAddress = ip;
+}
+
+uint32_t amd_am79c973::GetIPAddress()
+{
+    return initBlock.logicalAddress;
 }

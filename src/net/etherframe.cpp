@@ -14,7 +14,8 @@ EtherFrameHandler::EtherFrameHandler(EtherFrameProvider* backend, myos::common::
 
 EtherFrameHandler::~EtherFrameHandler()
 {
-    backend->handlers[etherType_BE] = 0;
+    if (backend->handlers[etherType_BE] == this)
+        backend->handlers[etherType_BE] = 0;
 }
 
 bool EtherFrameHandler::OnEtherFrameReceived(myos::common::uint8_t* etherframePayload, myos::common::uint32_t size)
@@ -25,6 +26,12 @@ void EtherFrameHandler::Send(myos::common::uint64_t dstMAC_BE, myos::common::uin
 {
     backend->Send(dstMAC_BE, etherType_BE, etherframePayload, size);
 }
+
+uint32_t EtherFrameHandler::GetIPAddress()
+{
+    return backend->GetIPAddress();
+}
+
 
 EtherFrameProvider::EtherFrameProvider(myos::drivers::amd_am79c973* backend) :
 RawDataHandler(backend)
@@ -41,6 +48,9 @@ EtherFrameProvider::~EtherFrameProvider()
 
 bool EtherFrameProvider::OnRawDataReceived(myos::common::uint8_t* buffer, myos::common::uint32_t size)
 {
+    if (size < sizeof(EtherFrameHeader))
+        return false;
+
     EtherFrameHeader* frame = (EtherFrameHeader*)buffer;
     bool sendBack = false;
 
@@ -74,4 +84,17 @@ void EtherFrameProvider::Send(myos::common::uint64_t dstMAC_BE, myos::common::ui
         dst[i] = src[i];
 
     backend->Send(buffer2, size + sizeof(EtherFrameHeader));
+
+    MemoryManager::activeMemoryManager->free(buffer2);
+}
+
+uint64_t EtherFrameProvider::GetMACAddress()
+{
+    return backend->GetMACAddress();
+}
+
+
+uint32_t EtherFrameProvider::GetIPAddress()
+{
+    return backend->GetIPAddress();    
 }

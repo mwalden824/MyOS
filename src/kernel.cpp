@@ -16,6 +16,7 @@
 
 #include <drivers/amd_am79c973.h>
 #include <net/etherframe.h>
+#include <net/arp.h>
 
 // #define GRAPHICS_MODE
 
@@ -143,7 +144,7 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    printf("Hello World!\n");
+    // printf("Hello World!\n");
 
     GlobalDescriptorTable gdt;
 
@@ -151,19 +152,19 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     size_t heap = 10*1024*1024;
     MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
 
-    printf("heap: 0x");
-    printfHex((heap >> 24) & 0xFF);
-    printfHex((heap >> 16) & 0xFF);
-    printfHex((heap >> 8) & 0xFF);
-    printfHex(heap & 0xFF);
+    // printf("heap: 0x");
+    // printfHex((heap >> 24) & 0xFF);
+    // printfHex((heap >> 16) & 0xFF);
+    // printfHex((heap >> 8) & 0xFF);
+    // printfHex(heap & 0xFF);
 
     void* allocated = memoryManager.malloc(1024);
-    printf("\nallocated: 0x");
-    printfHex(((size_t)allocated >> 24) & 0xFF);
-    printfHex(((size_t)allocated >> 16) & 0xFF);
-    printfHex(((size_t)allocated >> 8) & 0xFF);
-    printfHex((size_t)allocated & 0xFF);
-    printf("\n");
+    // printf("\nallocated: 0x");
+    // printfHex(((size_t)allocated >> 24) & 0xFF);
+    // printfHex(((size_t)allocated >> 16) & 0xFF);
+    // printfHex(((size_t)allocated >> 8) & 0xFF);
+    // printfHex((size_t)allocated & 0xFF);
+    // printf("\n");
 
     TaskManager taskManager;
     // Task task1(&gdt, taskA);
@@ -244,13 +245,27 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // third: 0x1E8
     // fourth: 0x168
 
+    uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
+    uint32_t ip_be = ((uint32_t)ip4 << 24) | ((uint32_t)ip3 << 16) | ((uint32_t)ip2 << 8) | ((uint32_t)ip1);
+    uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
+    uint32_t gip_be = ((uint32_t)gip4 << 24) | ((uint32_t)gip3 << 16) | ((uint32_t)gip2 << 8) | ((uint32_t)gip1);
+
     amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
-    EtherFrameProvider etherframe(eth0);
-    etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);
+
+    eth0->SetIPAddress(ip_be);
     
+    EtherFrameProvider etherframe(eth0);
+
+    AddressResolutionProtocol arp(&etherframe);
+
+    // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
 
     interrupts.Activate();
+
+    printf("\n\n\n\n\n\n\n\n");
+    // arp.Resolve(gip_be);
+    arp.BroadcastMACAddress(gip_be);
 
     while(1)
     {

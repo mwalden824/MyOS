@@ -22,7 +22,7 @@ namespace myos
                 ~RawDataHandler();
 
                 virtual bool OnRawDataReceived(myos::common::uint8_t* buffer, myos::common::uint32_t size);
-                virtual void Send(myos::common::uint8_t* buffer, myos::common::uint32_t size);
+                void Send(myos::common::uint8_t* buffer, myos::common::uint32_t size);
         };
 
         class amd_am79c973 : public Driver, public myos::hardwarecommunication::InterruptHandler
@@ -84,6 +84,8 @@ namespace myos
 
                 void SetHandler(RawDataHandler* handler);
                 myos::common::uint64_t GetMACAddress();
+                void SetIPAddress(myos::common::uint32_t ip);
+                myos::common::uint32_t GetIPAddress();
         };
     }
 }

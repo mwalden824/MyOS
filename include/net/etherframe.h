@@ -14,7 +14,7 @@ namespace myos
             myos::common::uint64_t dstMAC_BE : 48;
             myos::common::uint64_t srcMAC_BE : 48;
             myos::common::uint16_t etherType_BE;
-        } __attribute__((packed));
+        } __attribute__ ((packed));
 
         typedef myos::common::uint32_t EtherFrameFooter;
 
@@ -29,7 +29,8 @@ namespace myos
                 EtherFrameHandler(EtherFrameProvider* backend, myos::common::uint16_t etherType);
                 ~EtherFrameHandler();
                 virtual bool OnEtherFrameReceived(myos::common::uint8_t* etherframePayload, myos::common::uint32_t size);
-                virtual void Send(myos::common::uint64_t dstMAC_BE, myos::common::uint8_t* etherframePayload, myos::common::uint32_t size);
+                void Send(myos::common::uint64_t dstMAC_BE, myos::common::uint8_t* etherframePayload, myos::common::uint32_t size);
+                myos::common::uint32_t GetIPAddress();
         };
 
         class EtherFrameProvider : public myos::drivers::RawDataHandler
@@ -43,6 +44,9 @@ namespace myos
 
                 bool OnRawDataReceived(myos::common::uint8_t* buffer, myos::common::uint32_t size);
                 void Send(myos::common::uint64_t dstMAC_BE, myos::common::uint16_t etherType_BE, myos::common::uint8_t* buffer, myos::common::uint32_t size);
+
+                myos::common::uint64_t GetMACAddress();
+                myos::common::uint32_t GetIPAddress();
         };
     }
 }
