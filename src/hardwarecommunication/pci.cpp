@@ -90,23 +90,23 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
                 if (driver != 0)
                     driverManager->AddDriver(driver);
 
-                printf("PCI BUS ");
-                printfHex(bus & 0xFF);
+                // printf("PCI BUS ");
+                // printfHex(bus & 0xFF);
 
-                printf(", DEVICE  ");
-                printfHex(device & 0xFF);
+                // printf(", DEVICE  ");
+                // printfHex(device & 0xFF);
 
-                printf(", FUNCTION ");
-                printfHex(function & 0xFF);
+                // printf(", FUNCTION ");
+                // printfHex(function & 0xFF);
 
-                printf(" = VENDOR ");
-                printfHex((dev.vendor_id & 0xFF00) >> 8);
-                printfHex(dev.vendor_id & 0xFF);
+                // printf(" = VENDOR ");
+                // printfHex((dev.vendor_id & 0xFF00) >> 8);
+                // printfHex(dev.vendor_id & 0xFF);
 
-                printf(", DEVICE ID ");
-                printfHex((dev.device_id & 0xFF00) >> 8);
-                printfHex(dev.device_id & 0xFF);
-                printf("\n");
+                // printf(", DEVICE ID ");
+                // printfHex((dev.device_id & 0xFF00) >> 8);
+                // printfHex(dev.device_id & 0xFF);
+                // printf("\n");
             }
         }
     }

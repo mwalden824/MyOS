@@ -5,6 +5,10 @@ using namespace myos::common;
 using namespace myos::net;
 using namespace myos::drivers;
 
+void printf(char*);
+void printfHex(uint8_t key);
+
+
 EtherFrameHandler::EtherFrameHandler(EtherFrameProvider* backend, myos::common::uint16_t etherType)
 {
     this->etherType_BE = ( (etherType & 0x00FF) << 8 ) | ( (etherType & 0xFF00) >> 8 );

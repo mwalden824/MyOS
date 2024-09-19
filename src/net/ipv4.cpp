@@ -4,6 +4,9 @@ using namespace myos;
 using namespace myos::common;
 using namespace myos::net;
 
+void printf(char*);
+void printfHex(uint8_t key);
+
 InternetProtocolHandler::InternetProtocolHandler(myos::net::InternetProtocolProvider* backend, uint8_t ip_protocol)
 {
     this->backend = backend;
@@ -70,7 +73,7 @@ bool InternetProtocolProvider::OnEtherFrameReceived(uint8_t* etherframePayload, 
         ipMessage->srcIP = temp;
 
         ipMessage->timeToLive = 0x40;
-
+        ipMessage->checkSum = 0;
         ipMessage->checkSum = Checksum((uint16_t*)ipMessage, 4*ipMessage->headerLength);
     }
 
@@ -118,7 +121,6 @@ void InternetProtocolProvider::Send(uint32_t dstIP_BE, uint8_t protocol, uint8_t
 uint16_t InternetProtocolProvider::Checksum(uint16_t* data, uint32_t lengthInBytes)
 {
     uint32_t temp = 0;
-    
 
     for (int i = 0; i < lengthInBytes/2; i++)
         temp += ((data[i] & 0xFF00) >> 8) | ((data[i] & 0x00FF) << 8);

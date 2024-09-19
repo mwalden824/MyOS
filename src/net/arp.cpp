@@ -6,6 +6,10 @@ using namespace myos::net;
 using namespace myos::drivers;
 
 
+void printf(char*);
+void printfHex(uint8_t key);
+
+
 AddressResolutionProtocol::AddressResolutionProtocol(EtherFrameProvider* backend) :
 EtherFrameHandler(backend, 0x806)
 {
@@ -64,6 +68,7 @@ void AddressResolutionProtocol::BroadcastMACAddress(uint32_t IP_BE)
     
     arp.srcMAC = backend->GetMACAddress();
     arp.srcIP = backend->GetIPAddress();
+    // arp.dstMAC = 0xFFFFFFFFFFFF; // broadcast
     arp.dstMAC = Resolve(IP_BE);
     arp.dstIP = IP_BE;
     
@@ -83,8 +88,8 @@ void AddressResolutionProtocol::RequestMACAddress(uint32_t IP_BE)
     arp.srcIP = backend->GetIPAddress();
 
     arp.dstMAC = 0xFFFFFFFFFFFF; // broadcast
+    // arp.dstMAC = Resolve(IP_BE);
     arp.dstIP = IP_BE;
-
 
     this->Send(arp.dstMAC, (uint8_t*)&arp, sizeof(AddressResolutionProtocolMessage));
 }

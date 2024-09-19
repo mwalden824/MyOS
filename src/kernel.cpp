@@ -18,6 +18,7 @@
 #include <net/etherframe.h>
 #include <net/arp.h>
 #include <net/ipv4.h>
+#include <net/icmp.h>
 
 // #define GRAPHICS_MODE
 
@@ -30,7 +31,7 @@ using namespace myos::net;
 
 void printf(char* str)
 {
-    uint16_t* VideoMemory = (uint16_t*)0xb8000;
+    static uint16_t* VideoMemory = (uint16_t*)0xb8000;
 
     static uint8_t x = 0, y = 0;
 
@@ -176,7 +177,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     // SyscallHandler syscalls(0x80, &interrupts);
 
-    printf("Initializing Hardware, Stage 1\n");
+    // printf("Initializing Hardware, Stage 1\n");
 
     #ifdef GRAPHICS_MODE
         Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
@@ -209,10 +210,10 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
         VideoGraphicsArray vga;
     #endif
 
-    printf("Initializing Hardware, Stage 2\n");
+    // printf("Initializing Hardware, Stage 2\n");
     drvManager.ActivateAll();
 
-    printf("Initializing Hardware, Stage 3\n");
+    // printf("Initializing Hardware, Stage 3\n");
 
     #ifdef GRAPHICS_MODE
         vga.SetMode(320, 200, 8);
@@ -264,16 +265,27 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     AddressResolutionProtocol arp(&etherframe);
 
     InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
+    InternetControlMessageProtocol icmp(&ipv4);
 
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
 
     interrupts.Activate();
 
-    printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
+    // printf("\n\n\n\n\n\n\n\n");
     // arp.Resolve(gip_be);
     // arp.BroadcastMACAddress(gip_be);
-    ipv4.Send(gip_be, 0x0008, (uint8_t*)"foobar", 6);
+    // ipv4.Send(gip_be, 0x0008, (uint8_t*)"foobar", 6);
+
+    arp.BroadcastMACAddress(gip_be);
+    icmp.RequestEchoReply(gip_be);
 
     while(1)
     {

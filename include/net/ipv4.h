@@ -38,7 +38,7 @@ namespace myos
                 InternetProtocolHandler(myos::net::InternetProtocolProvider* backend, myos::common::uint8_t ip_protocol);
                 ~InternetProtocolHandler();
                 
-                bool OnInternetProtocolReceived(myos::common::uint32_t srcIP_BE, myos::common::uint32_t dstIP_BE, myos::common::uint8_t* internetProtocolPayload, myos::common::uint32_t size);
+                virtual bool OnInternetProtocolReceived(myos::common::uint32_t srcIP_BE, myos::common::uint32_t dstIP_BE, myos::common::uint8_t* internetProtocolPayload, myos::common::uint32_t size);
                 void Send(myos::common::uint32_t dstIP_BE, myos::common::uint8_t* internetProtocolPayload, myos::common::uint32_t size);
         };
 
