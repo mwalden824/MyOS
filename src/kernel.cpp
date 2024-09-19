@@ -19,6 +19,7 @@
 #include <net/arp.h>
 #include <net/ipv4.h>
 #include <net/icmp.h>
+#include <net/udp.h>
 
 // #define GRAPHICS_MODE
 
@@ -84,6 +85,20 @@ class PrintfKeyboardEventHandler : public KeyboardEventHandler
             char* foo = " ";
             foo[0] = c;
             printf(foo);
+        }
+};
+
+class PrintUDPHandler : public UserDatagramProtocolHandler
+{
+    public:
+        void HandleUserDatagramProtocolMessage(UserDatagramProtocolSocket* socket, myos::common::uint8_t* data, myos::common::uint16_t size)
+        {
+            char* foo = " ";
+            for (int i = 0; i < size; i++)
+            {
+                foo[0] = data[i];
+                printf(foo);
+            }
         }
 };
 
@@ -266,6 +281,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
     InternetControlMessageProtocol icmp(&ipv4);
+    UserDatagramProtocolProvider udp(&ipv4);
 
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
@@ -286,6 +302,14 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     arp.BroadcastMACAddress(gip_be);
     icmp.RequestEchoReply(gip_be);
+
+    PrintUDPHandler udpHandler;
+    // UserDatagramProtocolSocket* udpSocket = udp.Connect(gip_be, 1234);
+    // udp.Bind(udpSocket, &udpHandler);
+    // udpSocket->Send((uint8_t*)"Hello UDP!", 10);
+
+    UserDatagramProtocolSocket* udpSocket = udp.Listen(1234);
+    udp.Bind(udpSocket, &udpHandler);
 
     while(1)
     {

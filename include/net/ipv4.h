@@ -44,7 +44,7 @@ namespace myos
 
 
 
-        class InternetProtocolProvider : myos::net::EtherFrameHandler
+        class InternetProtocolProvider : public myos::net::EtherFrameHandler
         {
             friend class InternetProtocolHandler;
             protected:
