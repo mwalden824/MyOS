@@ -20,6 +20,7 @@
 #include <net/ipv4.h>
 #include <net/icmp.h>
 #include <net/udp.h>
+#include <net/tcp.h>
 
 // #define GRAPHICS_MODE
 
@@ -282,6 +283,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
     InternetControlMessageProtocol icmp(&ipv4);
     UserDatagramProtocolProvider udp(&ipv4);
+    TransmissionControlProtocolProvider tcp(&ipv4);
 
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
@@ -301,15 +303,20 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // ipv4.Send(gip_be, 0x0008, (uint8_t*)"foobar", 6);
 
     arp.BroadcastMACAddress(gip_be);
-    icmp.RequestEchoReply(gip_be);
+    
+    tcp.Connect(gip_be, 1234);
 
-    PrintUDPHandler udpHandler;
+    // icmp.RequestEchoReply(gip_be);
+
+    // PrintUDPHandler udpHandler;
     // UserDatagramProtocolSocket* udpSocket = udp.Connect(gip_be, 1234);
     // udp.Bind(udpSocket, &udpHandler);
     // udpSocket->Send((uint8_t*)"Hello UDP!", 10);
 
-    UserDatagramProtocolSocket* udpSocket = udp.Listen(1234);
-    udp.Bind(udpSocket, &udpHandler);
+    // UserDatagramProtocolSocket* udpSocket = udp.Listen(1234);
+    // udp.Bind(udpSocket, &udpHandler);
+
+
 
     while(1)
     {
