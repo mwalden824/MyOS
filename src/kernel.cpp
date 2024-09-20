@@ -103,6 +103,22 @@ class PrintUDPHandler : public UserDatagramProtocolHandler
         }
 };
 
+class PrintTCPHandler : public TransmissionControlProtocolHandler
+{
+    public:
+        bool HandleTransmissionControlProtocolMessage(TransmissionControlProtocolSocket* socket, myos::common::uint8_t* data, myos::common::uint16_t size)
+        {
+            char* foo = " ";
+            for (int i = 0; i < size; i++)
+            {
+                foo[0] = data[i];
+                printf(foo);
+            }
+
+            return true;
+        }
+};
+
 class MouseToConsole : public MouseEventHandler
 {
     int8_t x, y;
@@ -305,6 +321,10 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     arp.BroadcastMACAddress(gip_be);
     
     tcp.Connect(gip_be, 1234);
+    PrintTCPHandler tcpHandler;
+    TransmissionControlProtocolSocket* tcpSocket = tcp.Connect(gip_be, 1234);
+    tcp.Bind(tcpSocket, &tcpHandler);
+    tcpSocket->Send((uint8_t*)"Hello TCP!", 10);
 
     // icmp.RequestEchoReply(gip_be);
 
