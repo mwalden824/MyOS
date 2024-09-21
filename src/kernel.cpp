@@ -297,8 +297,8 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     AddressResolutionProtocol arp(&etherframe);
 
     InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
-    InternetControlMessageProtocol icmp(&ipv4);
-    UserDatagramProtocolProvider udp(&ipv4);
+    // InternetControlMessageProtocol icmp(&ipv4);
+    // UserDatagramProtocolProvider udp(&ipv4);
     TransmissionControlProtocolProvider tcp(&ipv4);
 
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
@@ -320,7 +320,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     arp.BroadcastMACAddress(gip_be);
     
-    tcp.Connect(gip_be, 1234);
+    // tcp.Connect(gip_be, 1234);
     PrintTCPHandler tcpHandler;
     TransmissionControlProtocolSocket* tcpSocket = tcp.Connect(gip_be, 1234);
     tcp.Bind(tcpSocket, &tcpHandler);

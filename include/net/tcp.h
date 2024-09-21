@@ -1,5 +1,5 @@
-#ifndef __MYOS__NET__TCP__H
-#define __MYOS__NET__TCP__H
+#ifndef __MYOS__NET__TCP_H
+#define __MYOS__NET__TCP_H
 
 #include <common/types.h>
 #include <net/ipv4.h>
