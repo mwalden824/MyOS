@@ -1,5 +1,5 @@
-#ifndef __MYOS__NET__ETHERFRAME_H
-#define __MYOS__NET__ETHERFRAME_H
+#ifndef __MYOS__NET__ETHERFRAME__H
+#define __MYOS__NET__ETHERFRAME__H
 
 #include <common/types.h>
 #include <drivers/amd_am79c973.h>
