@@ -93,7 +93,7 @@ bool TransmissionControlProtocolProvider::OnInternetProtocolReceived(uint32_t sr
     uint16_t remotePort = msg->srcPort;
 
     TransmissionControlProtocolSocket* socket = 0;
-    for (uint16_t i = 0; i < numSockets && sockets == 0; i++)
+    for (uint16_t i = 0; i < numSockets && socket == 0; i++)
     {
         if (sockets[i]->localPort == msg->dstPort 
         && sockets[i]->localIP == dstIP_BE
@@ -247,7 +247,7 @@ bool TransmissionControlProtocolProvider::OnInternetProtocolReceived(uint32_t sr
 
     if (socket != 0 && socket->state == CLOSED)
     {
-        for (uint16_t i = 0; i < numSockets && sockets == 0; i++)
+        for (uint16_t i = 0; i < numSockets && socket == 0; i++)
         {
             if (sockets[i] == socket)
             {
@@ -270,7 +270,7 @@ bool TransmissionControlProtocolProvider::OnInternetProtocolReceived(uint32_t sr
 
 void TransmissionControlProtocolProvider::Send(TransmissionControlProtocolSocket* socket, uint8_t* data, uint16_t size, uint16_t flags)
 {
-    uint32_t totalLength = size + sizeof(TransmissionControlProtocolHeader);
+    uint16_t totalLength = size + sizeof(TransmissionControlProtocolHeader);
     uint16_t lengthInclPHdr = totalLength + sizeof(TransmissionControlProtocolPsuedoHeader);
     uint8_t* buffer = (uint8_t*)MemoryManager::activeMemoryManager->malloc(lengthInclPHdr);
 
