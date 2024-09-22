@@ -115,6 +115,23 @@ class PrintTCPHandler : public TransmissionControlProtocolHandler
                 printf(foo);
             }
 
+            if(size > 9
+                && data[0] == 'G'
+                && data[1] == 'E'
+                && data[2] == 'T'
+                && data[3] == ' '
+                && data[4] == '/'
+                && data[5] == ' '
+                && data[6] == 'H'
+                && data[7] == 'T'
+                && data[8] == 'T'
+                && data[9] == 'P'
+            )
+            {
+                socket->Send((uint8_t*)"HTTP/1.1 200 OK\r\nServer: MyOS\r\nContent-Type: text/html\r\n\r\n<html><head><title>My Operating System</title></head><body><b>My Operating System</b> http://www.AlgorithMan.de</body></html>\r\n",184);
+                socket->Disconnect();
+            }
+
             return true;
         }
 };
@@ -322,9 +339,10 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     
     // tcp.Connect(gip_be, 1234);
     PrintTCPHandler tcpHandler;
-    TransmissionControlProtocolSocket* tcpSocket = tcp.Connect(gip_be, 1234);
+    // TransmissionControlProtocolSocket* tcpSocket = tcp.Connect(gip_be, 1234);
+    TransmissionControlProtocolSocket* tcpSocket = tcp.Listen(1234);
     tcp.Bind(tcpSocket, &tcpHandler);
-    tcpSocket->Send((uint8_t*)"Hello TCP!", 10);
+    // tcpSocket->Send((uint8_t*)"Hello TCP!", 10);
 
     // icmp.RequestEchoReply(gip_be);
 
