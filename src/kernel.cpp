@@ -8,7 +8,10 @@
 #include <drivers/mouse.h>
 #include <hardwarecommunication/pci.h>
 #include <drivers/vga.h>
+
 #include <drivers/ata.h>
+#include <filesystem/msdospart.h>
+
 #include <gui/desktop.h>
 #include <gui/widget.h>
 #include <gui/window.h>
@@ -30,6 +33,8 @@ using namespace myos::hardwarecommunication;
 using namespace myos;
 using namespace myos::gui;
 using namespace myos::net;
+using namespace myos::filesystem;
+
 
 void printf(char* str)
 {
@@ -195,7 +200,7 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    // printf("Hello World!\n");
+    printf("Hello World!\n");
 
     GlobalDescriptorTable gdt;
 
@@ -226,7 +231,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     // SyscallHandler syscalls(0x80, &interrupts);
 
-    // printf("Initializing Hardware, Stage 1\n");
+    printf("Initializing Hardware, Stage 1\n");
 
     #ifdef GRAPHICS_MODE
         Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
@@ -259,10 +264,10 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
         VideoGraphicsArray vga;
     #endif
 
-    // printf("Initializing Hardware, Stage 2\n");
+    printf("Initializing Hardware, Stage 2\n");
     drvManager.ActivateAll();
 
-    // printf("Initializing Hardware, Stage 3\n");
+    printf("Initializing Hardware, Stage 3\n");
 
     #ifdef GRAPHICS_MODE
         vga.SetMode(320, 200, 8);
@@ -274,14 +279,16 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
         // vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
     #endif
 
-    // // interrupt 14
-    // AdvancedTechnologyAttachment ata0m(0x1F0, true);
-    // printf("\nATA Primary Master: ");
-    // ata0m.Identify();
+    // interrupt 14
+    AdvancedTechnologyAttachment ata0m(0x1F0, true);
+    printf("\nATA Primary Master: ");
+    ata0m.Identify();
 
-    // AdvancedTechnologyAttachment ata0s(0x1F0, false);
-    // printf("\nATA Primary Slave: ");
-    // ata0s.Identify();
+    AdvancedTechnologyAttachment ata0s(0x1F0, false);
+    printf("\nATA Primary Slave: ");
+    ata0s.Identify();
+
+    MSDOSPartitionTable::ReadPartitions(&ata0s);
 
     // char* atabuffer = "BLAH BLAH BLAH";
     // ata0s.Write28(0, (uint8_t*)atabuffer, 14);
@@ -289,34 +296,34 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     // ata0s.Read28(0, 14);
 
-    // // interrupt 15
-    // AdvancedTechnologyAttachment ata1m(0x170, true);
-    // AdvancedTechnologyAttachment ata1s(0x170, false);
+    // interrupt 15
+    AdvancedTechnologyAttachment ata1m(0x170, true);
+    AdvancedTechnologyAttachment ata1s(0x170, false);
 
     // third: 0x1E8
     // fourth: 0x168
 
-    uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
-    uint32_t ip_be = ((uint32_t)ip4 << 24) | ((uint32_t)ip3 << 16) | ((uint32_t)ip2 << 8) | ((uint32_t)ip1);
+    // uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
+    // uint32_t ip_be = ((uint32_t)ip4 << 24) | ((uint32_t)ip3 << 16) | ((uint32_t)ip2 << 8) | ((uint32_t)ip1);
 
-    uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
-    uint32_t gip_be = ((uint32_t)gip4 << 24) | ((uint32_t)gip3 << 16) | ((uint32_t)gip2 << 8) | ((uint32_t)gip1);
+    // uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
+    // uint32_t gip_be = ((uint32_t)gip4 << 24) | ((uint32_t)gip3 << 16) | ((uint32_t)gip2 << 8) | ((uint32_t)gip1);
 
-    uint8_t subnetMask_1 = 255, subnetMask_2 = 255, subnetMask_3 = 255, subnetMask_4 = 0;
-    uint32_t subnetMask__be = ((uint32_t)subnetMask_4 << 24) | ((uint32_t)subnetMask_3 << 16) | ((uint32_t)subnetMask_2 << 8) | ((uint32_t)subnetMask_1);
+    // uint8_t subnetMask_1 = 255, subnetMask_2 = 255, subnetMask_3 = 255, subnetMask_4 = 0;
+    // uint32_t subnetMask__be = ((uint32_t)subnetMask_4 << 24) | ((uint32_t)subnetMask_3 << 16) | ((uint32_t)subnetMask_2 << 8) | ((uint32_t)subnetMask_1);
 
-    amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+    // amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
 
-    eth0->SetIPAddress(ip_be);
+    // eth0->SetIPAddress(ip_be);
     
-    EtherFrameProvider etherframe(eth0);
+    // EtherFrameProvider etherframe(eth0);
 
-    AddressResolutionProtocol arp(&etherframe);
+    // AddressResolutionProtocol arp(&etherframe);
 
-    InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
+    // InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnetMask__be);
     // InternetControlMessageProtocol icmp(&ipv4);
     // UserDatagramProtocolProvider udp(&ipv4);
-    TransmissionControlProtocolProvider tcp(&ipv4);
+    // TransmissionControlProtocolProvider tcp(&ipv4);
 
     // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3);    
     // eth0->Send((uint8_t*)"Hello Network", 13);
@@ -335,13 +342,13 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // arp.BroadcastMACAddress(gip_be);
     // ipv4.Send(gip_be, 0x0008, (uint8_t*)"foobar", 6);
 
-    arp.BroadcastMACAddress(gip_be);
+    // arp.BroadcastMACAddress(gip_be);
     
     // tcp.Connect(gip_be, 1234);
-    PrintTCPHandler tcpHandler;
+    // PrintTCPHandler tcpHandler;
     // TransmissionControlProtocolSocket* tcpSocket = tcp.Connect(gip_be, 1234);
-    TransmissionControlProtocolSocket* tcpSocket = tcp.Listen(1234);
-    tcp.Bind(tcpSocket, &tcpHandler);
+    // TransmissionControlProtocolSocket* tcpSocket = tcp.Listen(1234);
+    // tcp.Bind(tcpSocket, &tcpHandler);
     // tcpSocket->Send((uint8_t*)"Hello TCP!", 10);
 
     // icmp.RequestEchoReply(gip_be);

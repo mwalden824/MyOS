@@ -28,7 +28,7 @@ namespace myos
                 ~AdvancedTechnologyAttachment();
 
                 void Identify();
-                void Read28(myos::common::uint32_t sector, myos::common::uint32_t count);
+                void Read28(myos::common::uint32_t sector, myos::common::uint8_t* mbr, myos::common::uint32_t count);
                 void Write28(myos::common::uint32_t sector, myos::common::uint8_t* data, myos::common::uint32_t count);
                 void Flush();
 
