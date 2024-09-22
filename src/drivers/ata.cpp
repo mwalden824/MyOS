@@ -103,7 +103,9 @@ void AdvancedTechnologyAttachment::Read28(uint32_t sector, uint8_t* mbr, uint32_
     {
         uint16_t wdata = dataPort.Read();
 
-        
+        mbr[i] = wdata & 0xFF;
+        if(i+1 < count)
+            mbr[i+1] = (wdata >> 8) & 0xFF;
 
         // char *text = "  \0";
         // text[0] = wdata & 0xFF;
