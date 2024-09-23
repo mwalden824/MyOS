@@ -1,4 +1,5 @@
 #include <filesystem/msdospart.h>
+#include <filesystem/fat.h>
 
 using namespace myos;
 using namespace myos::common;
@@ -12,15 +13,18 @@ void MSDOSPartitionTable::ReadPartitions(myos::drivers::AdvancedTechnologyAttach
 {
     MasterBootRecord mbr;
     // hd->Read28(0, (uint8_t*)&mbr, sizeof(MasterBootRecord));
-    hd->Read28(0, (uint8_t*)&mbr, sizeof(MasterBootRecord));
 
     // printf("MBR: ");
-    // for (int i = 446; i < 446+ 4*16; i++)
-    // {
-    //     printfHex(((uint8_t*)(&mbr))[i]);
-    //     printf(" ");
-    // }
-    // printf("\n");
+
+    hd->Read28(0, (uint8_t*)&mbr, sizeof(MasterBootRecord));
+
+    printf("MBR: ");
+    for (int i = 446; i < 446+ 4*16; i++)
+    {
+        printfHex(((uint8_t*)(&mbr))[i]);
+        printf(" ");
+    }
+    printf("\n");
 
     if (mbr.magicNumber != 0xAA55)
     {
@@ -30,14 +34,19 @@ void MSDOSPartitionTable::ReadPartitions(myos::drivers::AdvancedTechnologyAttach
 
     for (int i = 0; i < 4; i++)
     {
+        if (mbr.primaryPartition[i].partition_id == 0x00)
+            continue;
+
         printf(" Partition ");
         printfHex(i & 0xFF);
 
         if (mbr.primaryPartition[i].bootable == 0x80)
-            printf(" BOOTABLE");
+            printf(" BOOTABLE. Type: ");
         else
-            printf(" NOT BOOTABLE");
+            printf(" NOT BOOTABLE. Type: ");
 
         printfHex(mbr.primaryPartition[i].partition_id);
+
+        ReadBiosBlock(hd, mbr.primaryPartition[i].start_lba);
     }
 }

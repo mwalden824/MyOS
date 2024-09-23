@@ -11,6 +11,7 @@
 
 #include <drivers/ata.h>
 #include <filesystem/msdospart.h>
+#include <filesystem/fat.h>
 
 #include <gui/desktop.h>
 #include <gui/widget.h>
