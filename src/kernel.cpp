@@ -289,7 +289,6 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     printf("\nATA Primary Slave: ");
     ata0s.Identify();
 
-    MSDOSPartitionTable::ReadPartitions(&ata0s);
 
     // char* atabuffer = "BLAH BLAH BLAH";
     // ata0s.Write28(0, (uint8_t*)atabuffer, 14);
@@ -300,6 +299,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // interrupt 15
     AdvancedTechnologyAttachment ata1m(0x170, true);
     AdvancedTechnologyAttachment ata1s(0x170, false);
+
+    MSDOSPartitionTable::ReadPartitions(&ata0s);
+
 
     // third: 0x1E8
     // fourth: 0x168

@@ -13,6 +13,10 @@ void myos::filesystem::ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t 
     BiosParameterBlock32 bpb;
     hd->Read28(partitionOffset, (uint8_t*)&bpb, sizeof(BiosParameterBlock32));
 
+    printf("sectors per cluster: ");
+    printfHex(bpb.sectorsPerCluster);
+    printf("\n");
+
     // for (int i = 0x00; i < sizeof(BiosParameterBlock32); i++)
     // {
     //     printfHex(((uint8_t*)&bpb)[i]);
@@ -47,16 +51,33 @@ void myos::filesystem::ReadBiosBlock(AdvancedTechnologyAttachment *hd, uint32_t 
         if ((dirent[i].attributes & 0x10) == 0x10) // Directory
             continue;
 
-        uint32_t fileCluster = ((uint32_t)dirent[i].firstClusterHi) << 16 | ((uint32_t)dirent[i].firstClusterLow);
+        uint32_t firstFileCluster = ((uint32_t)dirent[i].firstClusterHi) << 16 | ((uint32_t)dirent[i].firstClusterLow);
 
-        uint32_t fileSector = dataStart + bpb.sectorsPerCluster * (fileCluster - 2);
+        int32_t SIZE = dirent[i].size;
+        int32_t nextFileCluster = firstFileCluster; 
+        uint8_t buffer[513];
+        uint8_t fatbuffer[513];
 
-        uint8_t buffer[512];
+        while (SIZE > 0)
+        {
+            uint32_t fileSector = dataStart + bpb.sectorsPerCluster * (nextFileCluster - 2);
+            int sectorOffset = 0;
 
-        hd->Read28(fileSector, buffer, 512);
+            for (; SIZE > 0; SIZE -= 512)
+            {
+                hd->Read28(fileSector + sectorOffset, buffer, 512);
 
-        buffer[dirent[i].size] = '\0';
-        printf((char*)buffer);
+                buffer[SIZE > 512 ? 512 : dirent[i].size] = '\0';
+                printf((char*)buffer);
 
+                if (++sectorOffset > bpb.sectorsPerCluster)
+                    break;
+            }
+
+            uint32_t fatSectorForNextCluster = nextFileCluster / (512/sizeof(uint32_t));
+            hd->Read28(fatStart+fatSectorForNextCluster, fatbuffer, 512);
+            uint32_t fatOffsetInSectorForCurrentCluster = nextFileCluster % (512/sizeof(uint32_t));
+            nextFileCluster = ((uint32_t*)&fatbuffer)[fatOffsetInSectorForCurrentCluster] & 0x0FFFFFFF;
+        }
     }
 }

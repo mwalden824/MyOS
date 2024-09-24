@@ -73,6 +73,7 @@ void AdvancedTechnologyAttachment::Identify()
 }
 
 void AdvancedTechnologyAttachment::Read28(uint32_t sector, uint8_t* data, uint32_t count)
+// void AdvancedTechnologyAttachment::Read28(uint32_t sector, uint32_t count)
 {
     // if (sector > 0x0FFFFFFF)
     //     return;
